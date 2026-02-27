@@ -1,6 +1,6 @@
 import { cn } from "@/react-app/lib/utils";
 
-export type ExperienceLevel = "entry" | "mid" | "senior" | "lead";
+export type ExperienceLevel = "intern" | "junior" | "mid" | "senior" | "lead";
 
 interface ExperienceBadgeProps {
   level: ExperienceLevel;
@@ -11,8 +11,12 @@ const levelConfig: Record<
   ExperienceLevel,
   { label: string; className: string }
 > = {
-  entry: {
-    label: "Entry Level",
+  intern: {
+    label: "Intern",
+    className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  },
+  junior: {
+    label: "Junior",
     className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
   },
   mid: {

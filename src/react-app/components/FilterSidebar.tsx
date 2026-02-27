@@ -13,16 +13,11 @@ interface FilterSidebarProps {
 }
 
 const experienceLevels = [
-  { value: "entry", label: "Entry Level" },
+  { value: "intern", label: "Intern" },
+  { value: "junior", label: "Junior" },
   { value: "mid", label: "Mid Level" },
   { value: "senior", label: "Senior" },
   { value: "lead", label: "Lead" },
-];
-
-const locationTypes = [
-  { value: "remote", label: "Remote" },
-  { value: "hybrid", label: "Hybrid" },
-  { value: "onsite", label: "On-site" },
 ];
 
 function formatSalary(value: number): string {
@@ -40,19 +35,11 @@ export function FilterSidebar({
   isMobile,
 }: FilterSidebarProps) {
   const handleExperienceChange = (value: string, checked: boolean) => {
-    const current = filters.experienceLevel || [];
+    const current = filters.experience_level || [];
     const updated = checked
       ? [...current, value]
       : current.filter((v) => v !== value);
-    onFiltersChange({ ...filters, experienceLevel: updated });
-  };
-
-  const handleLocationTypeChange = (value: string, checked: boolean) => {
-    const current = filters.locationType || [];
-    const updated = checked
-      ? [...current, value]
-      : current.filter((v) => v !== value);
-    onFiltersChange({ ...filters, locationType: updated });
+    onFiltersChange({ ...filters, experience_level: updated });
   };
 
   const handleSalaryChange = (values: number[]) => {
@@ -68,8 +55,7 @@ export function FilterSidebar({
   };
 
   const hasActiveFilters =
-    (filters.experienceLevel?.length || 0) > 0 ||
-    (filters.locationType?.length || 0) > 0 ||
+    (filters.experience_level?.length || 0) > 0 ||
     filters.salaryMin ||
     filters.salaryMax;
 
@@ -115,7 +101,7 @@ export function FilterSidebar({
               <div key={level.value} className="flex items-center gap-2.5">
                 <Checkbox
                   id={`exp-${level.value}`}
-                  checked={filters.experienceLevel?.includes(level.value)}
+                  checked={filters.experience_level?.includes(level.value)}
                   onCheckedChange={(checked) =>
                     handleExperienceChange(level.value, checked as boolean)
                   }
@@ -125,32 +111,6 @@ export function FilterSidebar({
                   className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
                 >
                   {level.label}
-                </Label>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Location Type */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium text-foreground">
-            Work Type
-          </Label>
-          <div className="space-y-2.5">
-            {locationTypes.map((type) => (
-              <div key={type.value} className="flex items-center gap-2.5">
-                <Checkbox
-                  id={`loc-${type.value}`}
-                  checked={filters.locationType?.includes(type.value)}
-                  onCheckedChange={(checked) =>
-                    handleLocationTypeChange(type.value, checked as boolean)
-                  }
-                />
-                <Label
-                  htmlFor={`loc-${type.value}`}
-                  className="text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
-                >
-                  {type.label}
                 </Label>
               </div>
             ))}

@@ -9,6 +9,7 @@ interface AuthContextType {
   setUser: (user: User | null) => void;
   login: (tokens: { access: string; refresh: string }) => Promise<void>;
   logout: () => void;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,6 +32,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setTokens(null);
       clearTokens();
     }
+  };
+
+  const refreshProfile = async () => {
+    await loadProfile();
   };
 
   useEffect(() => {
@@ -64,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user && !!tokens,
         login,
         logout,
+        refreshProfile,
       }}
     >
       {children}

@@ -13,10 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/react-app/components/ui/select";
+import api, { isApiError } from "@/react-app/api/axios";
 
 export default function CreateJobPage() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -32,12 +34,87 @@ export default function CreateJobPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setIsLoading(true);
 
-    // TODO: POST to backend jobs API when endpoint shape is known
+    const salaryMin = Number(formData.salaryMin);
+    const salaryMax = Number(formData.salaryMax);
 
-    setIsLoading(false);
-    navigate("/dashboard/jobs");
+    if (Number.isNaN(salaryMin) || Number.isNaN(salaryMax)) {
+      setError("Please enter valid salary numbers.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (salaryMin > salaryMax) {
+      setError("Salary Min must be less than or equal to Salary Max.");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const requirements = formData.requirements.filter((r) => r.trim() !== "");
+      const benefits = formData.benefits.filter((b) => b.trim() !== "");
+
+      await api.post("jobs/create/", {
+        title: formData.title,
+        location: formData.location,
+
+        // Send both camelCase and snake_case to match whichever backend convention is used.
+        locationType: formData.locationType,
+        location_type: formData.locationType,
+
+        salaryMin,
+        salary_min: salaryMin,
+
+        salaryMax,
+        salary_max: salaryMax,
+
+        salaryCurrency: "USD",
+        salary_currency: "USD",
+
+        experienceLevel: formData.experienceLevel,
+        experience_level: formData.experienceLevel,
+
+        description: formData.description,
+        requirements,
+        benefits,
+      });
+
+      navigate("/dashboard/jobs");
+    } catch (err: unknown) {
+      if (isApiError(err) && err.response?.status === 401) {
+        setError("You are not authorized. Please sign in again.");
+        return;
+      }
+
+      if (isApiError(err) && err.response?.data) {
+        const data = err.response.data as unknown;
+
+        if (typeof data === "string") {
+          setError(data);
+          return;
+        }
+
+        if (data && typeof data === "object") {
+          const messages = Object.values(data as Record<string, unknown>)
+            .flatMap((v) => (Array.isArray(v) ? v : [v]))
+            .filter((v): v is string => typeof v === "string");
+
+          setError(
+            messages.join(" ") || "Failed to create job. Please check your inputs."
+          );
+          return;
+        }
+
+        setError("Failed to create job. Please check your inputs.");
+        return;
+      }
+
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const addItem = (field: "requirements" | "benefits") => {
@@ -85,6 +162,13 @@ export default function CreateJobPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Error Display */}
+          {error && (
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive animate-fade-in">
+              {error}
+            </div>
+          )}
+
           {/* Basic Info */}
           <div className="glass rounded-xl p-6 space-y-5">
             <h2 className="text-lg font-semibold border-b border-border pb-3">
