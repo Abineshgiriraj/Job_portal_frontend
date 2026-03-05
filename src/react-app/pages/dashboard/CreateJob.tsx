@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
-import { ArrowLeft, Plus, X, Loader2 } from "lucide-react";
+import { useNavigate, Navigate } from "react-router";
+import { ArrowLeft, Plus, Loader2 } from "lucide-react";
 import { DashboardLayout } from "@/react-app/components/layout";
 import { Button } from "@/react-app/components/ui/button";
 import { Input } from "@/react-app/components/ui/input";
@@ -14,71 +14,46 @@ import {
   SelectValue,
 } from "@/react-app/components/ui/select";
 import api, { isApiError } from "@/react-app/api/axios";
+import { useAuth } from "@/react-app/context/AuthContext";
 
 export default function CreateJobPage() {
   const navigate = useNavigate();
+  const { user, role } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
     title: "",
-    location: "",
-    locationType: "remote",
-    salaryMin: "",
-    salaryMax: "",
-    experienceLevel: "mid",
     description: "",
-    requirements: [""],
-    benefits: [""],
+    salary: "",
+    location: "",
+    experience_level: "mid" as "intern" | "junior" | "mid" | "senior" | "lead",
   });
+
+  if (!user || !role) {
+    return <Navigate to="/login" replace />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
-    const salaryMin = Number(formData.salaryMin);
-    const salaryMax = Number(formData.salaryMax);
+    const salary = Number(formData.salary);
 
-    if (Number.isNaN(salaryMin) || Number.isNaN(salaryMax)) {
-      setError("Please enter valid salary numbers.");
-      setIsLoading(false);
-      return;
-    }
-
-    if (salaryMin > salaryMax) {
-      setError("Salary Min must be less than or equal to Salary Max.");
+    if (Number.isNaN(salary)) {
+      setError("Please enter a valid salary number.");
       setIsLoading(false);
       return;
     }
 
     try {
-      const requirements = formData.requirements.filter((r) => r.trim() !== "");
-      const benefits = formData.benefits.filter((b) => b.trim() !== "");
-
       await api.post("jobs/create/", {
         title: formData.title,
-        location: formData.location,
-
-        // Send both camelCase and snake_case to match whichever backend convention is used.
-        locationType: formData.locationType,
-        location_type: formData.locationType,
-
-        salaryMin,
-        salary_min: salaryMin,
-
-        salaryMax,
-        salary_max: salaryMax,
-
-        salaryCurrency: "USD",
-        salary_currency: "USD",
-
-        experienceLevel: formData.experienceLevel,
-        experience_level: formData.experienceLevel,
-
         description: formData.description,
-        requirements,
-        benefits,
+        salary: salary,
+        location: formData.location,
+        experience_level: formData.experience_level,
       });
 
       navigate("/dashboard/jobs");
@@ -89,57 +64,26 @@ export default function CreateJobPage() {
       }
 
       if (isApiError(err) && err.response?.data) {
-        const data = err.response.data as unknown;
-
+        const data = err.response.data as any;
         if (typeof data === "string") {
           setError(data);
-          return;
-        }
-
-        if (data && typeof data === "object") {
-          const messages = Object.values(data as Record<string, unknown>)
+        } else if (data && typeof data === "object") {
+          const messages = Object.values(data)
             .flatMap((v) => (Array.isArray(v) ? v : [v]))
             .filter((v): v is string => typeof v === "string");
 
           setError(
             messages.join(" ") || "Failed to create job. Please check your inputs."
           );
-          return;
+        } else {
+          setError("Failed to create job. Please check your inputs.");
         }
-
-        setError("Failed to create job. Please check your inputs.");
-        return;
+      } else {
+        setError("Something went wrong. Please try again.");
       }
-
-      setError("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const addItem = (field: "requirements" | "benefits") => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: [...prev[field], ""],
-    }));
-  };
-
-  const removeItem = (field: "requirements" | "benefits", index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: prev[field].filter((_, i) => i !== index),
-    }));
-  };
-
-  const updateItem = (
-    field: "requirements" | "benefits",
-    index: number,
-    value: string
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: prev[field].map((item, i) => (i === index ? value : item)),
-    }));
   };
 
   return (
@@ -172,7 +116,7 @@ export default function CreateJobPage() {
           {/* Basic Info */}
           <div className="glass rounded-xl p-6 space-y-5">
             <h2 className="text-lg font-semibold border-b border-border pb-3">
-              Basic Information
+              Job Information
             </h2>
 
             <div className="space-y-2">
@@ -203,73 +147,39 @@ export default function CreateJobPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Work Type *</Label>
-                <Select
-                  value={formData.locationType}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, locationType: value }))
+                <Label htmlFor="salary">Salary *</Label>
+                <Input
+                  id="salary"
+                  type="number"
+                  placeholder="120000"
+                  value={formData.salary}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, salary: e.target.value }))
                   }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="remote">Remote</SelectItem>
-                    <SelectItem value="hybrid">Hybrid</SelectItem>
-                    <SelectItem value="onsite">On-site</SelectItem>
-                  </SelectContent>
-                </Select>
+                  required
+                />
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="space-y-2">
-                <Label htmlFor="salaryMin">Salary Min ($) *</Label>
-                <Input
-                  id="salaryMin"
-                  type="number"
-                  placeholder="100000"
-                  value={formData.salaryMin}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, salaryMin: e.target.value }))
-                  }
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="salaryMax">Salary Max ($) *</Label>
-                <Input
-                  id="salaryMax"
-                  type="number"
-                  placeholder="150000"
-                  value={formData.salaryMax}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, salaryMax: e.target.value }))
-                  }
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Experience Level *</Label>
-                <Select
-                  value={formData.experienceLevel}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, experienceLevel: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="entry">Entry Level</SelectItem>
-                    <SelectItem value="mid">Mid Level</SelectItem>
-                    <SelectItem value="senior">Senior</SelectItem>
-                    <SelectItem value="lead">Lead / Manager</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label>Experience Level *</Label>
+              <Select
+                value={formData.experience_level}
+                onValueChange={(value: any) =>
+                  setFormData((prev) => ({ ...prev, experience_level: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="intern">Intern</SelectItem>
+                  <SelectItem value="junior">Junior</SelectItem>
+                  <SelectItem value="mid">Mid Level</SelectItem>
+                  <SelectItem value="senior">Senior</SelectItem>
+                  <SelectItem value="lead">Lead / Manager</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -277,7 +187,7 @@ export default function CreateJobPage() {
               <Textarea
                 id="description"
                 placeholder="Describe the role, responsibilities, and what makes this opportunity unique..."
-                className="min-h-[150px]"
+                className="min-h-[200px]"
                 value={formData.description}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, description: e.target.value }))
@@ -287,96 +197,27 @@ export default function CreateJobPage() {
             </div>
           </div>
 
-          {/* Requirements */}
-          <div className="glass rounded-xl p-6 space-y-4">
-            <h2 className="text-lg font-semibold border-b border-border pb-3">
-              Requirements
-            </h2>
-
-            {formData.requirements.map((req, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <Input
-                  placeholder="e.g. 5+ years of React experience"
-                  value={req}
-                  onChange={(e) =>
-                    updateItem("requirements", index, e.target.value)
-                  }
-                />
-                {formData.requirements.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeItem("requirements", index)}
-                    className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            ))}
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => addItem("requirements")}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Requirement
-            </Button>
-          </div>
-
-          {/* Benefits */}
-          <div className="glass rounded-xl p-6 space-y-4">
-            <h2 className="text-lg font-semibold border-b border-border pb-3">
-              Benefits
-            </h2>
-
-            {formData.benefits.map((benefit, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <Input
-                  placeholder="e.g. Unlimited PTO"
-                  value={benefit}
-                  onChange={(e) =>
-                    updateItem("benefits", index, e.target.value)
-                  }
-                />
-                {formData.benefits.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeItem("benefits", index)}
-                    className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            ))}
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => addItem("benefits")}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Benefit
-            </Button>
-          </div>
-
-          {/* Submit */}
-          <div className="flex items-center justify-end gap-4">
+          <div className="flex justify-end gap-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => navigate(-1)}
+              disabled={isLoading}
             >
               Cancel
             </Button>
-            <Button type="submit" className="glow-primary" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="min-w-[150px]">
               {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : null}
-              {isLoading ? "Publishing..." : "Publish Job"}
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Posting...
+                </>
+              ) : (
+                <>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Post Job
+                </>
+              )}
             </Button>
           </div>
         </form>

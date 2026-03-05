@@ -40,6 +40,9 @@ export default function JobsPage() {
     if (filters.location) params.location = filters.location;
     if (filters.salaryMin) params.min_salary = filters.salaryMin;
     if (filters.salaryMax) params.max_salary = filters.salaryMax;
+    if (filters.experience_level?.length) {
+      params.experience_level = filters.experience_level.join(",");
+    }
   
     api.get("jobs/", { params })
       .then((res) => {
@@ -58,8 +61,7 @@ export default function JobsPage() {
   );
 
   const activeFilterCount =
-    (filters.experienceLevel?.length || 0) +
-    (filters.locationType?.length || 0) +
+    (filters.experience_level?.length || 0) +
     (filters.salaryMin || filters.salaryMax ? 1 : 0);
 
   return (
@@ -80,7 +82,7 @@ export default function JobsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Job title, company, or keyword"
+            placeholder="Job title or keyword"
             className="pl-10 h-11 bg-card"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}

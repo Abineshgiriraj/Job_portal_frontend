@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router";
 import HomePage from "@/react-app/pages/Home";
 import JobsPage from "@/react-app/pages/Jobs";
+import JobDetailsPage from "@/react-app/pages/JobDetails";
+import ApplyJobPage from "@/react-app/pages/ApplyJob";
 import LoginPage from "@/react-app/pages/Login";
 import RegisterPage from "@/react-app/pages/Register";
 import {
@@ -58,6 +60,24 @@ export default function App() {
             element={
               <RequireAuth>
                 <JobsPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/jobs/:id"
+            element={
+              <RequireAuth>
+                <JobDetailsPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/jobs/:id/apply"
+            element={
+              <RequireAuth>
+                <RequireRole allowedRoles={["job_seeker"]}>
+                  <ApplyJobPage />
+                </RequireRole>
               </RequireAuth>
             }
           />

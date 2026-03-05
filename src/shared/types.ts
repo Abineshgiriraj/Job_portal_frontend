@@ -1,19 +1,11 @@
 export interface Job {
   id: string;
   title: string;
-  company: string;
-  companyLogo?: string;
-  location: string;
-  locationType: "remote" | "hybrid" | "onsite";
-  salaryMin: number;
-  salaryMax: number;
-  salaryCurrency: string;
-  experienceLevel: "entry" | "mid" | "senior" | "lead";
   description: string;
-  requirements: string[];
-  benefits: string[];
+  salary: number;
+  location: string;
+  experience_level: "intern" | "junior" | "mid" | "senior" | "lead";
   postedAt: string;
-  recruiterId: string;
 }
 
 export type UserRole = "job_seeker" | "recruiter";
@@ -24,20 +16,17 @@ export interface User {
   name: string;
   role: UserRole;
   avatar?: string;
-  company?: string;
   title?: string;
   createdAt: string;
 }
 
 export interface Application {
   id: string;
-  jobId: string;
-  userId: string;
+  job: string; // Job ID
+  applicant: string; // User ID
+  resume: string; // File URL
   status: "applied" | "shortlisted" | "rejected" | "hired";
-  appliedAt: string;
-  updatedAt: string;
-  coverLetter?: string;
-  resumeUrl?: string;
+  applied_at: string;
 }
 
 export interface PaginatedResponse<T> {
@@ -53,6 +42,5 @@ export interface JobFilters {
   location?: string;
   salaryMin?: number;
   salaryMax?: number;
-  experienceLevel?: string[];
-  locationType?: string[];
+  experience_level?: string[];
 }

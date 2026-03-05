@@ -36,6 +36,8 @@ const levelConfig: Record<
 export function ExperienceBadge({ level, className }: ExperienceBadgeProps) {
   const config = levelConfig[level];
 
+  if (!config) return null;
+
   return (
     <span
       className={cn(

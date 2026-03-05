@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { MapPin, DollarSign, Clock, Building2, Wifi, Users } from "lucide-react";
+import { MapPin, DollarSign, Clock, Building2 } from "lucide-react";
 import { Button } from "@/react-app/components/ui/button";
 import { ExperienceBadge } from "@/react-app/components/ExperienceBadge";
 import type { Job } from "@/shared/types";
@@ -10,25 +10,13 @@ interface JobCardProps {
   className?: string;
 }
 
-const locationTypeIcons = {
-  remote: Wifi,
-  hybrid: Users,
-  onsite: Building2,
-};
-
-const locationTypeLabels = {
-  remote: "Remote",
-  hybrid: "Hybrid",
-  onsite: "On-site",
-};
-
-function formatSalary(min: number, max: number, currency: string): string {
+function formatSalary(salary: number): string {
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency,
+    currency: "USD",
     maximumFractionDigits: 0,
   });
-  return `${formatter.format(min)} - ${formatter.format(max)}`;
+  return formatter.format(salary);
 }
 
 function formatDate(dateString: string): string {
@@ -44,8 +32,6 @@ function formatDate(dateString: string): string {
 }
 
 export function JobCard({ job, className }: JobCardProps) {
-  const LocationIcon = locationTypeIcons[job.locationType];
-
   return (
     <div
       className={cn(
@@ -54,19 +40,9 @@ export function JobCard({ job, className }: JobCardProps) {
       )}
     >
       <div className="flex items-start gap-4">
-        {/* Company Logo */}
-        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-secondary">
-          {job.companyLogo ? (
-            <img
-              src={job.companyLogo}
-              alt={job.company}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-lg font-semibold text-muted-foreground">
-              {job.company[0]}
-            </div>
-          )}
+        {/* Company Logo - Default Placeholder */}
+        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-secondary flex items-center justify-center">
+          <Building2 className="h-6 w-6 text-muted-foreground" />
         </div>
 
         {/* Content */}
@@ -76,9 +52,8 @@ export function JobCard({ job, className }: JobCardProps) {
               <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
                 {job.title}
               </h3>
-              <p className="text-sm text-muted-foreground">{job.company}</p>
             </div>
-            <ExperienceBadge level={job.experienceLevel} />
+            <ExperienceBadge level={job.experience_level} />
           </div>
 
           {/* Meta info */}
@@ -88,12 +63,8 @@ export function JobCard({ job, className }: JobCardProps) {
               {job.location}
             </span>
             <span className="flex items-center gap-1.5">
-              <LocationIcon className="h-3.5 w-3.5" />
-              {locationTypeLabels[job.locationType]}
-            </span>
-            <span className="flex items-center gap-1.5">
               <DollarSign className="h-3.5 w-3.5" />
-              {formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency)}
+              {formatSalary(job.salary)}
             </span>
           </div>
 

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { DashboardLayout } from "@/react-app/components/layout";
 import { useAuth } from "@/react-app/context/AuthContext";
+import { cn } from "@/react-app/lib/utils";
 
 function StatCard({
   icon: Icon,
@@ -70,7 +71,7 @@ function RecruiterDashboard() {
       <h2 className="text-lg font-semibold mb-2">Recruiter dashboard</h2>
       <p className="text-sm text-muted-foreground">
         Your job postings and applicants will appear here once connected to the backend
-        company, job, and application APIs.
+        job and application APIs.
       </p>
       <div className="mt-4 flex gap-3">
         <Link

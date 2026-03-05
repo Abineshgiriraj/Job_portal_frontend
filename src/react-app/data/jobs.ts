@@ -4,7 +4,6 @@ export const mockJobs: Job[] = [
   {
     id: "1",
     title: "Senior Frontend Engineer",
-    company: "Vercel",
     location: "San Francisco, CA",
     salary: 200000,
     experience_level: "senior",
@@ -14,7 +13,6 @@ export const mockJobs: Job[] = [
   {
     id: "2",
     title: "Product Designer",
-    company: "Linear",
     location: "Remote",
     salary: 160000,
     experience_level: "mid",
@@ -24,7 +22,6 @@ export const mockJobs: Job[] = [
   {
     id: "3",
     title: "Full Stack Developer",
-    company: "Stripe",
     location: "New York, NY",
     salary: 180000,
     experience_level: "mid",
@@ -34,7 +31,6 @@ export const mockJobs: Job[] = [
   {
     id: "4",
     title: "Junior Software Engineer",
-    company: "Notion",
     location: "San Francisco, CA",
     salary: 110000,
     experience_level: "junior",
@@ -44,7 +40,6 @@ export const mockJobs: Job[] = [
   {
     id: "5",
     title: "Engineering Manager",
-    company: "Figma",
     location: "Remote",
     salary: 250000,
     experience_level: "lead",
@@ -68,7 +63,6 @@ export function filterJobs(
       const search = filters.search.toLowerCase();
       const matchesSearch =
         job.title.toLowerCase().includes(search) ||
-        (job.company && job.company.toLowerCase().includes(search)) ||
         job.description.toLowerCase().includes(search);
       if (!matchesSearch) return false;
     }
