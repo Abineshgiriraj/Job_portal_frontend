@@ -2,7 +2,7 @@ import axios, { AxiosError, AxiosHeaders } from "axios";
 
 // Reads from .env locally, or Vercel environment variables in production.
 // No trailing slash on VITE_API_URL — the "/api/" part is added here.
-const API_BASE_URL = `${import.meta.env.VITE_API_URL as string}/api/`;
+const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/`;
 
 export function setTokensOnClient(tokens: { access: string; refresh: string }) {
   localStorage.setItem("access", tokens.access);

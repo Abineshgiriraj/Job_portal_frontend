@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router";
-import { Briefcase, LogIn, UserPlus, LayoutDashboard } from "lucide-react";
+import { Briefcase, LogIn, UserPlus } from "lucide-react";
 import { Button } from "@/react-app/components/ui/button";
 
 const navLinks = [

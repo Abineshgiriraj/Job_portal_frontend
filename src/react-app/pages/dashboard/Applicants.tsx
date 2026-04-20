@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Loader2, FileText, Calendar, User, Mail, Phone, Briefcase, ExternalLink, Download, MoreHorizontal, Check, X, Star } from "lucide-react";
+import { Loader2, FileText, Calendar, User, Briefcase, ExternalLink, Download, MoreHorizontal, Check, X, Star, Linkedin } from "lucide-react";
 import { DashboardLayout } from "@/react-app/components/layout";
 import { Button } from "@/react-app/components/ui/button";
 import { Badge } from "@/react-app/components/ui/badge";

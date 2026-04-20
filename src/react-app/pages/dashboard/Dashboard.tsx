@@ -1,51 +1,8 @@
 import { Link, Navigate } from "react-router";
-import {
-  Briefcase,
-  FileText,
-  TrendingUp,
-  Clock,
-  CheckCircle2,
-  Users,
-  Eye,
-  ArrowRight,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { DashboardLayout } from "@/react-app/components/layout";
 import { useAuth } from "@/react-app/context/AuthContext";
-import { cn } from "@/react-app/lib/utils";
 
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  trend,
-  className,
-}: {
-  icon: typeof Briefcase;
-  label: string;
-  value: string | number;
-  trend?: string;
-  className?: string;
-}) {
-  return (
-    <div className={cn("glass rounded-xl p-5", className)}>
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="text-2xl font-bold mt-1">{value}</p>
-          {trend && (
-            <p className="text-xs text-primary mt-1 flex items-center gap-1">
-              <TrendingUp className="h-3 w-3" />
-              {trend}
-            </p>
-          )}
-        </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-          <Icon className="h-5 w-5 text-primary" />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function SeekerDashboard() {
   return (
