@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { MapPin, DollarSign, Clock, Building2 } from "lucide-react";
+import { MapPin, DollarSign, Clock, Building2, Users } from "lucide-react";
 import { Button } from "@/react-app/components/ui/button";
 import { ExperienceBadge } from "@/react-app/components/ExperienceBadge";
 import type { Job } from "@/shared/types";
@@ -66,6 +66,12 @@ export function JobCard({ job, className }: JobCardProps) {
               <DollarSign className="h-3.5 w-3.5" />
               {formatSalary(job.salary)}
             </span>
+            {job.applicant_count !== undefined && (
+              <span className="flex items-center gap-1.5 text-primary">
+                <Users className="h-3.5 w-3.5" />
+                {job.applicant_count} applicants
+              </span>
+            )}
           </div>
 
           {/* Description preview */}

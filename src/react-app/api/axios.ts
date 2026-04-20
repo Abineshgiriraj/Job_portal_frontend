@@ -3,17 +3,17 @@ import axios, { AxiosError, AxiosHeaders } from "axios";
 const API_BASE_URL = "http://127.0.0.1:8000/api/";
 
 export function setTokensOnClient(tokens: { access: string; refresh: string }) {
-  localStorage.setItem("access_token", tokens.access);
-  localStorage.setItem("refresh_token", tokens.refresh);
+  localStorage.setItem("access", tokens.access);
+  localStorage.setItem("refresh", tokens.refresh);
 }
 
 export function clearTokens() {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("access");
+  localStorage.removeItem("refresh");
 }
 
 function getJwtToken(): string | null {
-  return localStorage.getItem("access_token");
+  return localStorage.getItem("access");
 }
 
 export const api = axios.create({

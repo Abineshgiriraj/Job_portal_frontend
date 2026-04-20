@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
-import { ArrowLeft, Upload, FileText, Loader2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Upload, FileText, Loader2, CheckCircle2, Phone, Briefcase, Linkedin, Github, DollarSign, MessageSquare } from "lucide-react";
 import { PageLayout } from "@/react-app/components/layout";
 import { Button } from "@/react-app/components/ui/button";
 import { Input } from "@/react-app/components/ui/input";
 import { Label } from "@/react-app/components/ui/label";
+import { Textarea } from "@/react-app/components/ui/textarea";
 import api, { isApiError } from "@/react-app/api/axios";
 import type { Job } from "@/shared/types";
 
@@ -17,6 +18,15 @@ export default function ApplyJobPage() {
   const [isFetchingJob, setIsFetchingJob] = useState(true);
   const [error, setError] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const [formData, setFormData] = useState({
+    phone: "",
+    experience_years: "",
+    linkedin: "",
+    portfolio: "",
+    cover_letter: "",
+    expected_salary: "",
+  });
 
   useEffect(() => {
     if (!id) return;
@@ -33,6 +43,11 @@ export default function ApplyJobPage() {
         setIsFetchingJob(false);
       });
   }, [id]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -61,11 +76,18 @@ export default function ApplyJobPage() {
     setError("");
 
     try {
-      const formData = new FormData();
-      formData.append("job", id);
-      formData.append("resume", resume);
+      const data = new FormData();
+      data.append("job", id);
+      data.append("resume", resume);
+      data.append("phone", formData.phone);
+      data.append("experience_years", formData.experience_years);
+      
+      if (formData.linkedin) data.append("linkedin", formData.linkedin);
+      if (formData.portfolio) data.append("portfolio", formData.portfolio);
+      if (formData.cover_letter) data.append("cover_letter", formData.cover_letter);
+      if (formData.expected_salary) data.append("expected_salary", formData.expected_salary);
 
-      await api.post("applications/", formData, {
+      await api.post("applications/apply/", data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -78,7 +100,15 @@ export default function ApplyJobPage() {
     } catch (err: unknown) {
       if (isApiError(err) && err.response?.data) {
         const data = err.response.data as any;
-        setError(data.detail || data.message || "Failed to submit application.");
+        // Handle Django Rest Framework standard error format (detail or field-specific errors)
+        if (data.detail) {
+          setError(data.detail);
+        } else if (typeof data === 'object') {
+          const firstError = Object.values(data)[0];
+          setError(Array.isArray(firstError) ? firstError[0] : String(firstError));
+        } else {
+          setError("Application failed. Please check your inputs.");
+        }
       } else {
         setError("Something went wrong. Please try again.");
       }
@@ -132,7 +162,7 @@ export default function ApplyJobPage() {
 
   return (
     <PageLayout>
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         <Button
           variant="ghost"
           className="mb-6 -ml-2 text-muted-foreground hover:text-foreground"
@@ -145,7 +175,7 @@ export default function ApplyJobPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight mb-2 text-foreground">Apply for this Role</h1>
           <p className="text-muted-foreground">
-            Applying for <span className="font-medium text-foreground">{job.title}</span> at <span className="font-medium text-foreground">{job.location}</span>
+            Applying for <span className="font-medium text-foreground">{job.title}</span>
           </p>
         </div>
 
@@ -156,13 +186,99 @@ export default function ApplyJobPage() {
             </div>
           )}
 
+          {/* Section: Professional Details */}
           <div className="glass rounded-xl p-8 space-y-6">
+            <h2 className="text-xl font-semibold border-b border-border pb-4">Professional Details</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone Number *</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+1 (555) 000-0000"
+                    className="pl-10"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="experience_years">Years of Experience *</Label>
+                <div className="relative">
+                  <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="experience_years"
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 5"
+                    className="pl-10"
+                    value={formData.experience_years}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="expected_salary">Expected Salary (Annual USD)</Label>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="expected_salary"
+                    type="number"
+                    placeholder="e.g. 120000"
+                    className="pl-10"
+                    value={formData.expected_salary}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              <div className="space-y-2">
+                <Label htmlFor="linkedin">LinkedIn Profile URL</Label>
+                <div className="relative">
+                  <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="linkedin"
+                    type="url"
+                    placeholder="https://linkedin.com/in/username"
+                    className="pl-10"
+                    value={formData.linkedin}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="portfolio">Portfolio / GitHub URL</Label>
+                <div className="relative">
+                  <Github className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="portfolio"
+                    type="url"
+                    placeholder="https://github.com/username"
+                    className="pl-10"
+                    value={formData.portfolio}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Resume & Cover Letter */}
+          <div className="glass rounded-xl p-8 space-y-6">
+            <h2 className="text-xl font-semibold border-b border-border pb-4">Documents</h2>
+            
             <div className="space-y-4">
               <Label className="text-base font-semibold">Upload your Resume *</Label>
-              <p className="text-sm text-muted-foreground">
-                Please upload your resume in PDF format (max 5MB).
-              </p>
-              
               <div 
                 className={`relative border-2 border-dashed rounded-xl p-10 transition-all flex flex-col items-center justify-center gap-4 ${
                   resume ? 'border-primary/50 bg-primary/5' : 'border-border hover:border-primary/30 hover:bg-secondary/50'
@@ -188,18 +304,6 @@ export default function ApplyJobPage() {
                         {(resume.size / 1024 / 1024).toFixed(2)} MB
                       </p>
                     </div>
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="sm" 
-                      className="text-muted-foreground hover:text-destructive"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setResume(null);
-                      }}
-                    >
-                      Remove and replace
-                    </Button>
                   </>
                 ) : (
                   <>
@@ -213,6 +317,20 @@ export default function ApplyJobPage() {
                   </>
                 )}
               </div>
+            </div>
+
+            <div className="space-y-2 pt-4">
+              <Label htmlFor="cover_letter" className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Cover Letter
+              </Label>
+              <Textarea
+                id="cover_letter"
+                placeholder="Tell us why you're a great fit for this role..."
+                className="min-h-[150px]"
+                value={formData.cover_letter}
+                onChange={handleInputChange}
+              />
             </div>
           </div>
 

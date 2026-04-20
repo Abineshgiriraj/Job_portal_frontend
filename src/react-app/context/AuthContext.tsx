@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import type { User, UserRole } from "@/shared/types";
-import api, { clearTokens, setTokensOnClient } from "@/react-app/api/axios";
+import api, { clearTokens, setTokensOnClient, isApiError } from "@/react-app/api/axios";
 
 interface AuthContextType {
   user: User | null;
@@ -23,14 +23,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const role: UserRole | null = user?.role ?? null;
 
   const loadProfile = async () => {
+    const access = localStorage.getItem("access");
+    if (!access) {
+      logout();
+      return;
+    }
+
     try {
       const response = await api.get<User>("accounts/profile/");
       setUser(response.data);
     } catch (error) {
-      console.error("Failed to load profile", error);
-      setUser(null);
-      setTokens(null);
-      clearTokens();
+      if (isApiError(error) && error.response?.status === 401) {
+        await refreshToken();
+      } else {
+        console.error("Failed to load profile", error);
+        logout();
+      }
+    }
+  };
+
+  const refreshToken = async () => {
+    const refresh = localStorage.getItem("refresh");
+    if (!refresh) {
+      logout();
+      return;
+    }
+
+    try {
+      const response = await api.post<{ access: string }>("token/refresh/", {
+        refresh,
+      });
+      const newTokens = { access: response.data.access, refresh };
+      setTokens(newTokens);
+      setTokensOnClient(newTokens);
+      await loadProfile(); // Retry loading profile with new token
+    } catch (error) {
+      console.error("Failed to refresh token", error);
+      logout();
     }
   };
 
@@ -39,8 +68,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const access = localStorage.getItem("access_token");
-    const refresh = localStorage.getItem("refresh_token");
+    const access = localStorage.getItem("access");
+    const refresh = localStorage.getItem("refresh");
     if (access && refresh) {
       setTokens({ access, refresh });
       setTokensOnClient({ access, refresh });

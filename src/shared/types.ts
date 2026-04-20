@@ -6,6 +6,7 @@ export interface Job {
   location: string;
   experience_level: "intern" | "junior" | "mid" | "senior" | "lead";
   postedAt: string;
+  applicant_count?: number;
 }
 
 export type UserRole = "job_seeker" | "recruiter";
@@ -22,9 +23,15 @@ export interface User {
 
 export interface Application {
   id: string;
-  job: string; // Job ID
-  applicant: string; // User ID
+  job: Job; // Nested Job object
+  applicant: User; // Nested User object
   resume: string; // File URL
+  phone: string;
+  experience_years: number;
+  linkedin?: string;
+  portfolio?: string;
+  cover_letter?: string;
+  expected_salary?: number;
   status: "applied" | "shortlisted" | "rejected" | "hired";
   applied_at: string;
 }
