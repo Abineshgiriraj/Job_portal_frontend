@@ -1,6 +1,8 @@
 import axios, { AxiosError, AxiosHeaders } from "axios";
 
-const API_BASE_URL = "http://127.0.0.1:8000/api/";
+// Reads from .env locally, or Vercel environment variables in production.
+// No trailing slash on VITE_API_URL — the "/api/" part is added here.
+const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api/`;
 
 export function setTokensOnClient(tokens: { access: string; refresh: string }) {
   localStorage.setItem("access", tokens.access);
@@ -21,11 +23,12 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  // Keep baseURL exactly as configured (with trailing slash) while preventing `//` in requests.
+  // Prevents double slashes (//) if a caller accidentally passes "/endpoint"
   if (config.url?.startsWith("/")) {
     config.url = config.url.slice(1);
   }
 
+  // Attach JWT Bearer token if present
   const token = getJwtToken();
   if (token) {
     const headers = AxiosHeaders.from(config.headers);
